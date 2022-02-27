@@ -95,6 +95,8 @@ export class AppComponent implements OnInit{
   selectedCourse:string;
   update(e){
     this.selectedCourse = e.target.value
+    this.calendarVisible = false
+    this.INITIAL_EVENTS = []
     console.log(this.selectedCourse)
     this.getcallsservice.listofEvents(this.selectedCourse)
       .subscribe(
