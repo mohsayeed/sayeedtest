@@ -3,7 +3,7 @@
 
   <div class='demo-app-sidebar'>
     <div class='demo-app-sidebar-section'>
-      <h3>Choose Your Favorite Cricket Player</h3>
+      <h3>Choose The Course</h3>
       <select (change)="update($event)">
           <option value="default">Select A Course</option>
           <option *ngFor="let course of courseslist" [value]="course.courseID">

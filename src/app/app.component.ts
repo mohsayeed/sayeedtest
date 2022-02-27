@@ -25,10 +25,7 @@ export class AppComponent implements OnInit{
           console.log(error);
         });
   }
-
-
-
-  calendarVisible = true;
+  calendarVisible = false;
   calendarOptions: CalendarOptions = {
     headerToolbar: {
       left: 'prev,next today',
@@ -113,6 +110,7 @@ export class AppComponent implements OnInit{
           console.log(this.INITIAL_EVENTS)
           const { calendarOptions } = this;
           calendarOptions.initialEvents = this.INITIAL_EVENTS;
+          this.calendarVisible = true
           console.log(response)
         },
         (error: any) => {
