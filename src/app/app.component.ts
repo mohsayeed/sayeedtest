@@ -1,13 +1,32 @@
-import { Component } from '@angular/core';
-import { CalendarOptions, DateSelectArg, EventClickArg, EventApi } from '@fullcalendar/angular';
-import { INITIAL_EVENTS, createEventId } from './event-utils';
+import { Component, OnInit } from '@angular/core';
+import { CalendarOptions, DateSelectArg, EventClickArg, EventApi, EventInput } from '@fullcalendar/angular';
+import {  createEventId } from './event-utils';
+import { GetcallsService } from 'src/app/services/getcalls.service';
+
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit{
+   INITIAL_EVENTS: EventInput[] = [];
+  courseslist:any;
+  dateslist: any;
+  constructor(private getcallsservice:GetcallsService) { }
+  ngOnInit(): void {
+    this.getcallsservice.list()
+      .subscribe(
+        (response: any) => {
+          this.courseslist = response;
+          console.log(response)
+        },
+        (error: any) => {
+          console.log(error);
+        });
+  }
+
+
 
   calendarVisible = true;
   calendarOptions: CalendarOptions = {
@@ -17,11 +36,12 @@ export class AppComponent {
       right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
     },
     initialView: 'dayGridMonth',
-    initialEvents: INITIAL_EVENTS, // alternatively, use the `events` setting to fetch from a feed
+    initialEvents: this.INITIAL_EVENTS, // alternatively, use the `events` setting to fetch from a feed
     weekends: true,
     editable: true,
     selectable: true,
     selectMirror: true,
+    dragScroll:false,
     dayMaxEvents: true,
     select: this.handleDateSelect.bind(this),
     eventClick: this.handleEventClick.bind(this),
@@ -42,10 +62,13 @@ export class AppComponent {
     const { calendarOptions } = this;
     calendarOptions.weekends = !calendarOptions.weekends;
   }
+  selectioncopy:DateSelectArg;
 
-  handleDateSelect(selectInfo: DateSelectArg) {
+  handleDateSelect(Selection: DateSelectArg) {
+    this.selectioncopy = Selection
     const title = prompt('Please enter a new title for your event');
-    const calendarApi = selectInfo.view.calendar;
+    console.log(title)
+    const calendarApi = Selection.view.calendar;
 
     calendarApi.unselect(); // clear date selection
 
@@ -53,9 +76,11 @@ export class AppComponent {
       calendarApi.addEvent({
         id: createEventId(),
         title,
-        start: selectInfo.startStr,
-        end: selectInfo.endStr,
-        allDay: selectInfo.allDay
+        start: Selection.startStr,
+        end: Selection.endStr,
+        allDay: Selection.allDay,
+        resourceEditable: true // resource not editable for this event
+
       });
     }
   }
@@ -68,6 +93,31 @@ export class AppComponent {
 
   handleEvents(events: EventApi[]) {
     this.currentEvents = events;
+  }
+
+  selectedCourse:string;
+  update(e){
+    this.selectedCourse = e.target.value
+    console.log(this.selectedCourse)
+    this.getcallsservice.listofEvents(this.selectedCourse)
+      .subscribe(
+        (response: any) => {
+          this.dateslist = response;
+          for(let val of this.dateslist){
+            this.INITIAL_EVENTS.push({
+              id: createEventId(),
+              title: val.courseID,
+              start : val.dates
+            });
+          }
+          console.log(this.INITIAL_EVENTS)
+          const { calendarOptions } = this;
+          calendarOptions.initialEvents = this.INITIAL_EVENTS;
+          console.log(response)
+        },
+        (error: any) => {
+          console.log(error);
+        });
   }
 
 }
